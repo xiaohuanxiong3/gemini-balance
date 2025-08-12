@@ -131,14 +131,17 @@ class GeminiApiClient(ApiClient):
 
         headers = self._prepare_headers()
         async with httpx.AsyncClient(timeout=timeout, proxy=proxy_to_use) as client:
-            url = f"{self.base_url}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
+            # url = f"{self.base_url}/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
+            url = f"{self.base_url}/models/{model}:streamGenerateContent?key={api_key}"
             async with client.stream(method="POST", url=url, json=payload, headers=headers) as response:
                 if response.status_code != 200:
                     error_content = await response.aread()
                     error_msg = error_content.decode("utf-8")
                     raise Exception(f"API call failed with status code {response.status_code}, {error_msg}")
-                async for line in response.aiter_lines():
-                    yield line
+                # async for line in response.aiter_lines():
+                #     yield line
+                async for text in response.aiter_text():
+                    yield text
 
     async def count_tokens(self, payload: Dict[str, Any], model: str, api_key: str) -> Dict[str, Any]:
         timeout = httpx.Timeout(self.timeout, read=self.timeout)
