@@ -37,13 +37,26 @@ class AuthMiddleware(BaseHTTPMiddleware):
             and not request.url.path.startswith("/upload")
         ):
 
-            auth_token = request.cookies.get("auth_token")
+            # 从URL参数中获取auth_token
+            auth_token = request.query_params.get("key")
+
+            # 如果URL中没有auth_token，从cookies中获取
+            if not auth_token:
+                auth_token = request.cookies.get("auth_token")
+
+            # 验证auth_token
             if not auth_token or not verify_auth_token(auth_token):
                 logger.warning(f"Unauthorized access attempt to {request.url.path}")
                 return RedirectResponse(url="/")
             logger.debug("Request authenticated successfully")
 
         response = await call_next(request)
+
+        # 如果URL中有auth_token，设置cookie以便后续请求使用
+        auth_token_from_url = request.query_params.get("key")
+        if auth_token_from_url and auth_token_from_url == request.query_params.get("key"):
+            response.set_cookie(key="auth_token", value=auth_token_from_url, httponly=True, max_age=3600)
+
         return response
 
 

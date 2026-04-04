@@ -2,6 +2,7 @@
 路由配置模块，负责设置和配置应用程序的路由
 """
 
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -15,7 +16,7 @@ from app.service.stats.stats_service import StatsService
 
 logger = get_routes_logger()
 
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=Path(__file__).parent.parent / "templates")
 
 
 def setup_routers(app: FastAPI) -> None:
